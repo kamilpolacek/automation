@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
+    - name: Checkout repository
       uses: actions/checkout@v3
 
     - name: Set up JDK 11
@@ -20,21 +20,43 @@ jobs:
         distribution: 'temurin'
         java-version: '11'
 
-    - name: Install Android SDK
+    - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y wget unzip
-        wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip
-        mkdir -p $HOME/android-sdk/cmdline-tools
-        unzip commandlinetools-linux-7583922_latest.zip -d $HOME/android-sdk/cmdline-tools
-        mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/tools
-        echo "export ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-        echo "export PATH=$ANDROID_HOME/cmdline-tools/tools/bin:$ANDROID_HOME/platform-tools:$PATH" >> $GITHUB_ENV
-        echo "export PATH=$ANDROID_HOME/emulator:$PATH" >> $GITHUB_ENV
-        echo "export PATH=$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$PATH" >> $GITHUB_ENV
 
-    - name: Accept Licenses
+    - name: Download Android SDK Command-line Tools
+      run: |
+        wget https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip -O commandlinetools.zip
+        mkdir -p $HOME/android-sdk/cmdline-tools
+        unzip commandlinetools.zip -d $HOME/android-sdk/cmdline-tools
+        mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/tools
+        ls -la $HOME/android-sdk/cmdline-tools/tools
+        ls -la $HOME/android-sdk/cmdline-tools
+
+    - name: Set up environment variables
+      run: |
+        echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+        echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
+        echo "$HOME/android-sdk/cmdline-tools/tools/bin" >> $GITHUB_PATH
+        echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
+
+    - name: Accept Android SDK licenses
       run: yes | sdkmanager --licenses
+
+    - name: Install Android SDK packages
+      run: |
+        sdkmanager "platform-tools" "build-tools;31.0.0" "platforms;android-31"
+        sdkmanager --list
+
+    - name: Build the Android project
+      run: ./gradlew assembleRelease
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-release.apk
+        path: app/build/outputs/apk/release/app-release.apk
 
     - name: Install Android SDK Packages
       run: sdkmanager "platform-tools" "build-tools;31.0.0" "platforms;android-31"
