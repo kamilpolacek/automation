@@ -30,6 +30,44 @@ jobs:
         mkdir -p gradle/wrapper
         echo 'distributionUrl=https\://services.gradle.org/distributions/gradle-7.3.3-bin.zip' > gradle/wrapper/gradle-wrapper.properties
         
+    - name: Create settings.gradle
+      run: |
+        echo "rootProject.name = 'automation'" > settings.gradle
+        
+    - name: Create build.gradle
+      run: |
+        echo """
+        plugins {
+            id 'com.android.application'
+            id 'kotlin-android'
+        }
+        
+        android {
+            compileSdkVersion 30
+            
+            defaultConfig {
+                applicationId "com.example.automation"
+                minSdkVersion 21
+                targetSdkVersion 30
+                versionCode 1
+                versionName "1.0"
+            }
+            
+            buildTypes {
+                release {
+                    minifyEnabled false
+                    proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+                }
+            }
+        }
+        
+        dependencies {
+            implementation "org.jetbrains.kotlin:kotlin-stdlib:1.5.0"
+            implementation 'androidx.core:core-ktx:1.3.2'
+            implementation 'androidx.appcompat:appcompat:1.2.0'
+        }
+        """ > build.gradle
+        
     - name: List directory contents
       run: ls -la
         
