@@ -49,19 +49,13 @@ jobs:
         sdkmanager "platform-tools" "build-tools;31.0.0" "platforms;android-31"
         sdkmanager --list
 
+    - name: Check out current directory
+      run: pwd
+
+    - name: List files in current directory
+      run: ls -la
+
     - name: Build the Android project
-      run: ./gradlew assembleRelease
-
-    - name: Upload APK
-      uses: actions/upload-artifact@v3
-      with:
-        name: app-release.apk
-        path: app/build/outputs/apk/release/app-release.apk
-
-    - name: Install Android SDK Packages
-      run: sdkmanager "platform-tools" "build-tools;31.0.0" "platforms;android-31"
-
-    - name: Build with Gradle
       run: ./gradlew assembleRelease
 
     - name: Upload APK
