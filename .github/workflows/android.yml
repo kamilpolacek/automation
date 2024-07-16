@@ -31,8 +31,6 @@ jobs:
         mkdir -p $HOME/android-sdk/cmdline-tools
         unzip commandlinetools.zip -d $HOME/android-sdk/cmdline-tools
         mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/tools
-        ls -la $HOME/android-sdk/cmdline-tools/tools
-        ls -la $HOME/android-sdk/cmdline-tools
 
     - name: Set up environment variables
       run: |
@@ -49,17 +47,40 @@ jobs:
         sdkmanager "platform-tools" "build-tools;31.0.0" "platforms;android-31"
         sdkmanager --list
 
-    - name: Check out current directory
+    - name: Check current directory
       run: pwd
 
     - name: List files in current directory
       run: ls -la
 
-    - name: Build the Android project
-      run: ./gradlew assembleRelease
+    - name: List files in MyAndroidApp directory
+      run: ls -la MyAndroidApp
+
+    - name: List files in app directory
+      run: ls -la app
+
+    - name: Build the Android project (MyAndroidApp)
+      run: |
+        if [ -f MyAndroidApp/gradlew ]; then
+          cd MyAndroidApp
+          ./gradlew assembleRelease
+        else
+          echo "gradlew not found in MyAndroidApp"
+        fi
+
+    - name: Build the Android project (app)
+      run: |
+        if [ -f app/gradlew ]; then
+          cd app
+          ./gradlew assembleRelease
+        else
+          echo "gradlew not found in app"
+        fi
 
     - name: Upload APK
       uses: actions/upload-artifact@v3
       with:
         name: app-release.apk
-        path: app/build/outputs/apk/release/app-release.apk
+        path: |
+          MyAndroidApp/app/build/outputs/apk/release/app-release.apk
+          app/build/outputs/apk/release/app-release.apk
